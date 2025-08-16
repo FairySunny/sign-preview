@@ -16,7 +16,7 @@ public class SignPreview implements ClientModInitializer {
     public static final Identifier HUD_LAYER_PREVIEW = Identifier.of(MOD_ID, "preview");
 
     public static final String KEY_CATEGORY = "key.categories.signpreview";
-    public static final KeyBinding KEY_BINDING_PREVIEW = new KeyBinding("key.signpreview.preview", GLFW.GLFW_KEY_Z, KEY_CATEGORY);
+    public static final KeyBinding KEY_BINDING_PREVIEW = new KeyBinding("key.signpreview.preview", GLFW.GLFW_KEY_V, KEY_CATEGORY);
 
     @Override
     public void onInitializeClient() {
