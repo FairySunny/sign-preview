@@ -37,9 +37,11 @@ public class PreviewHud {
         Entity camera = this.client.getCameraEntity();
         ClientWorld world = this.client.world;
         if (camera == null || world == null) return;
+        double maxDistance = SignPreview.CONFIG.maxPreviewDistance;
+        maxDistance = Double.isNaN(maxDistance) ? 0.0 : MathHelper.clamp(maxDistance, 0.0, 64.0);
         float tickDelta = tickCounter.getTickDelta(true);
 
-        HitResult hitResult = findCrosshairTarget(camera, 20, tickDelta);
+        HitResult hitResult = findCrosshairTarget(camera, maxDistance, tickDelta);
 
         if (hitResult instanceof BlockHitResult blockHitResult) {
             BlockEntity blockEntity = world.getBlockEntity(blockHitResult.getBlockPos());
