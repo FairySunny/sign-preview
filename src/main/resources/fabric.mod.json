@@ -11,7 +11,7 @@
 		"homepage": "https://github.com/FairySunny/sign-preview",
 		"sources": "https://github.com/FairySunny/sign-preview"
 	},
-	"license": "GPL-3.0",
+	"license": "MIT",
 	"icon": "assets/signpreview/icon.png",
 	"environment": "client",
 	"entrypoints": {
