@@ -17,6 +17,9 @@
 	"entrypoints": {
 		"client": [
 			"com.fairysunny.mc.signpreview.SignPreview"
+		],
+		"modmenu": [
+			"com.fairysunny.mc.signpreview.modmenu.SignPreviewModMenuIntegration"
 		]
 	},
 	"depends": {
