@@ -2,7 +2,6 @@ package com.fairysunny.mc.signpreview.hud;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.state.MapRenderState;
 import net.minecraft.world.level.saveddata.maps.MapId;
 
@@ -22,14 +21,11 @@ public class ItemFrameMapPreviewHud {
         int height = this.client.getWindow().getGuiScaledHeight();
 
         // CartographyTableScreen.renderMap
-        context.pose().pushPose();
-        context.pose().translate(width / 2.0F - 64.0F, height / 2.0F - 64.0F, 0.0F);
-        var mapRenderer = this.client.getMapRenderer();
+        context.pose().pushMatrix();
+        context.pose().translate(width / 2.0F - 64.0F, height / 2.0F - 64.0F);
         var mapRenderState = new MapRenderState();
-        mapRenderer.extractRenderState(mapId, mapData, mapRenderState);
-        context.drawSpecial(multiBufferSource ->
-                mapRenderer.render(mapRenderState, context.pose(), multiBufferSource,
-                        true, LightTexture.FULL_BRIGHT));
-        context.pose().popPose();
+        this.client.getMapRenderer().extractRenderState(mapId, mapData, mapRenderState);
+        context.submitMapRenderState(mapRenderState);
+        context.pose().popMatrix();
     }
 }

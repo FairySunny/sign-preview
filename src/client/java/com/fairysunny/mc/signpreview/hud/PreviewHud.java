@@ -1,7 +1,7 @@
 package com.fairysunny.mc.signpreview.hud;
 
 import com.fairysunny.mc.signpreview.SignPreview;
-import com.fairysunny.mc.signpreview.mixin.GameRendererAccessor;
+import com.fairysunny.mc.signpreview.mixin.LocalPlayerAccessor;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -34,8 +34,7 @@ public class PreviewHud {
         maxDistance = Double.isNaN(maxDistance) ? 0.0 : Mth.clamp(maxDistance, 0.0, 128.0);
         float tickDelta = tickCounter.getGameTimeDeltaPartialTick(true);
 
-        var hitResult = ((GameRendererAccessor)minecraft.gameRenderer)
-                .signpreview$invokePick(camera, maxDistance, maxDistance, tickDelta);
+        var hitResult = LocalPlayerAccessor.invokePick(camera, maxDistance, maxDistance, tickDelta);
 
         switch (hitResult.getType()) {
             case BLOCK:

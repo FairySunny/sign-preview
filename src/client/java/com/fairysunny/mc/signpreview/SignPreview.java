@@ -3,11 +3,10 @@ package com.fairysunny.mc.signpreview;
 import com.fairysunny.mc.signpreview.hud.PreviewHud;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback;
-import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.lwjgl.glfw.GLFW;
 
 public class SignPreview implements ClientModInitializer {
@@ -15,10 +14,10 @@ public class SignPreview implements ClientModInitializer {
 
     public static SignPreviewConfig CONFIG = new SignPreviewConfig();
 
-    public static final ResourceLocation HUD_LAYER_PREVIEW =
-            ResourceLocation.fromNamespaceAndPath(MOD_ID, "preview");
+    public static final Identifier HUD_LAYER_PREVIEW = Identifier.fromNamespaceAndPath(MOD_ID, "preview");
 
-    public static final String KEY_CATEGORY = "key.categories.signpreview";
+    public static final KeyMapping.Category KEY_CATEGORY =
+            KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "general"));
     public static final KeyMapping KEY_BINDING_PREVIEW =
             new KeyMapping("key.signpreview.preview", GLFW.GLFW_KEY_V, KEY_CATEGORY);
 
@@ -33,8 +32,7 @@ public class SignPreview implements ClientModInitializer {
         }
 
         var previewHud = new PreviewHud(Minecraft.getInstance());
-        HudLayerRegistrationCallback.EVENT.register(layeredDrawer ->
-                layeredDrawer.addLayer(IdentifiedLayer.of(HUD_LAYER_PREVIEW, previewHud::render)));
+        HudElementRegistry.addLast(HUD_LAYER_PREVIEW, previewHud::render);
 
         KeyBindingHelper.registerKeyBinding(KEY_BINDING_PREVIEW);
     }
