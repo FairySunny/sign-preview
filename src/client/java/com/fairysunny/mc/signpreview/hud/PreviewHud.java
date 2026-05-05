@@ -1,93 +1,73 @@
 package com.fairysunny.mc.signpreview.hud;
 
 import com.fairysunny.mc.signpreview.SignPreview;
-import net.minecraft.block.AbstractSignBlock;
-import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.decoration.ItemFrameEntity;
-import net.minecraft.entity.projectile.ProjectileUtil;
-import net.minecraft.predicate.entity.EntityPredicates;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.MathHelper;
+import com.fairysunny.mc.signpreview.mixin.GameRendererAccessor;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.decoration.ItemFrame;
+import net.minecraft.world.level.block.SignBlock;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 
 public class PreviewHud {
-    private final MinecraftClient client;
+    private final Minecraft minecraft;
     private final SignPreviewHud signPreviewHud;
     private final ItemFrameMapPreviewHud itemFrameMapPreviewHud;
 
-    public PreviewHud(MinecraftClient client) {
-        this.client = client;
-        this.signPreviewHud = new SignPreviewHud(client);
-        this.itemFrameMapPreviewHud = new ItemFrameMapPreviewHud(client);
+    public PreviewHud(Minecraft minecraft) {
+        this.minecraft = minecraft;
+        this.signPreviewHud = new SignPreviewHud(minecraft);
+        this.itemFrameMapPreviewHud = new ItemFrameMapPreviewHud(minecraft);
     }
 
-    public void render(DrawContext context, RenderTickCounter tickCounter) {
-        if (!SignPreview.KEY_BINDING_PREVIEW.isPressed()) return;
+    public void render(GuiGraphics context, DeltaTracker tickCounter) {
+        if (!SignPreview.KEY_BINDING_PREVIEW.isDown()) return;
 
-        var camera = this.client.getCameraEntity();
-        var world = this.client.world;
-        if (camera == null || world == null) return;
+        var camera = minecraft.getCameraEntity();
+        var level = minecraft.level;
+        if (camera == null || level == null) return;
         double maxDistance = SignPreview.CONFIG.maxPreviewDistance;
-        maxDistance = Double.isNaN(maxDistance) ? 0.0 : MathHelper.clamp(maxDistance, 0.0, 128.0);
-        float tickDelta = tickCounter.getTickDelta(true);
+        maxDistance = Double.isNaN(maxDistance) ? 0.0 : Mth.clamp(maxDistance, 0.0, 128.0);
+        float tickDelta = tickCounter.getGameTimeDeltaPartialTick(true);
 
-        var hitResult = findCrosshairTarget(camera, maxDistance, tickDelta);
+        var hitResult = ((GameRendererAccessor)minecraft.gameRenderer)
+                .signpreview$invokePick(camera, maxDistance, maxDistance, tickDelta);
 
-        if (hitResult instanceof BlockHitResult blockHitResult) {
-            var blockEntity = world.getBlockEntity(blockHitResult.getBlockPos());
-
-            if (blockEntity instanceof SignBlockEntity signBlockEntity) {
-                boolean front = isCameraFacingSignFront(camera, signBlockEntity, tickDelta);
-
-                this.signPreviewHud.render(context, signBlockEntity, front);
-            }
-        } else if (hitResult instanceof EntityHitResult entityHitResult) {
-            var entity = entityHitResult.getEntity();
-
-            if (entity instanceof ItemFrameEntity itemFrameEntity) {
-                var mapId = itemFrameEntity.getMapId(itemFrameEntity.getHeldItemStack());
-                if (mapId == null) return;
-
-                this.itemFrameMapPreviewHud.render(context, mapId);
-            }
+        switch (hitResult.getType()) {
+            case BLOCK:
+                var blockEntity = level.getBlockEntity(((BlockHitResult)hitResult).getBlockPos());
+                if (blockEntity instanceof SignBlockEntity signBlockEntity) {
+                    boolean front = isCameraFacingSignFront(camera, signBlockEntity, tickDelta);
+                    signPreviewHud.render(context, signBlockEntity, front);
+                }
+                break;
+            case ENTITY:
+                var entity = ((EntityHitResult)hitResult).getEntity();
+                if (entity instanceof ItemFrame itemFrame) {
+                    var mapId = itemFrame.getFramedMapId(itemFrame.getItem());
+                    if (mapId != null) {
+                        itemFrameMapPreviewHud.render(context, mapId);
+                    }
+                }
+                break;
         }
-    }
-
-    private HitResult findCrosshairTarget(Entity camera, double maxDistance, float tickDelta) {
-        double d = maxDistance;
-        double e = MathHelper.square(d);
-        var vec3d = camera.getCameraPosVec(tickDelta);
-        var hitResult = camera.raycast(d, tickDelta, false);
-        double f = hitResult.getPos().squaredDistanceTo(vec3d);
-        if (hitResult.getType() != HitResult.Type.MISS) {
-            e = f;
-            d = Math.sqrt(f);
-        }
-
-        var vec3d2 = camera.getRotationVec(tickDelta);
-        var vec3d3 = vec3d.add(vec3d2.x * d, vec3d2.y * d, vec3d2.z * d);
-        var box = camera.getBoundingBox().stretch(vec3d2.multiply(d)).expand(1.0, 1.0, 1.0);
-        var entityHitResult = ProjectileUtil.raycast(camera, vec3d, vec3d3, box, EntityPredicates.CAN_HIT, e);
-        if (entityHitResult != null && entityHitResult.getPos().squaredDistanceTo(vec3d) < f) {
-            return entityHitResult;
-        }
-        return hitResult;
     }
 
     private static boolean isCameraFacingSignFront(Entity camera, SignBlockEntity sign, float tickDelta) {
-        var cameraPos = camera.getCameraPosVec(tickDelta);
-        if (sign.getCachedState().getBlock() instanceof AbstractSignBlock abstractSignBlock) {
-            var vec3d = abstractSignBlock.getCenter(sign.getCachedState());
-            double d = cameraPos.x - (sign.getPos().getX() + vec3d.x);
-            double e = cameraPos.z - (sign.getPos().getZ() + vec3d.z);
-            float f = abstractSignBlock.getRotationDegrees(sign.getCachedState());
-            float g = (float)(MathHelper.atan2(e, d) * 180.0F / (float)Math.PI) - 90.0F;
-            return MathHelper.angleBetween(f, g) <= 90.0F;
+        var cameraPos = camera.getEyePosition(tickDelta);
+
+        // SignBlockEntity.isFacingFrontText
+        if (sign.getBlockState().getBlock() instanceof SignBlock signBlock) {
+            var vec3 = signBlock.getSignHitboxCenterPosition(sign.getBlockState());
+            double d = cameraPos.x - (sign.getBlockPos().getX() + vec3.x);
+            double e = cameraPos.z - (sign.getBlockPos().getZ() + vec3.z);
+            float f = signBlock.getYRotationDegrees(sign.getBlockState());
+            float g = (float)(Mth.atan2(e, d) * 180 / Math.PI) - 90F;
+            return Mth.degreesDifferenceAbs(f, g) <= 90F;
         }
         return false;
     }

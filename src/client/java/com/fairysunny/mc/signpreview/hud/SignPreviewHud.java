@@ -1,94 +1,69 @@
 package com.fairysunny.mc.signpreview.hud;
 
-import net.minecraft.block.AbstractSignBlock;
-import net.minecraft.block.entity.HangingSignBlockEntity;
-import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.DiffuseLighting;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.TexturedRenderLayers;
-import net.minecraft.client.render.block.entity.AbstractSignBlockEntityRenderer;
-import net.minecraft.client.render.block.entity.SignBlockEntityRenderer;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import org.joml.Vector3f;
+import com.fairysunny.mc.signpreview.mixin.AbstractSignEditScreenAccessor;
+import com.mojang.blaze3d.platform.Lighting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.HangingSignEditScreen;
+import net.minecraft.client.gui.screens.inventory.SignEditScreen;
+import net.minecraft.world.level.block.entity.HangingSignBlockEntity;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
 
-import java.util.stream.IntStream;
+import java.util.function.Consumer;
 
 public class SignPreviewHud {
-    private static final Vector3f SIGN_TEXT_SCALE = new Vector3f(0.9765628F, 0.9765628F, 0.9765628F);
-    private static final Vector3f HANGING_SIGN_TEXT_SCALE = new Vector3f(1.0F, 1.0F, 1.0F);
-    private final MinecraftClient client;
+    private static class SignRenderer extends SignEditScreen implements Consumer<GuiGraphics> {
+        SignRenderer(SignBlockEntity blockEntity, boolean front, boolean filter, Minecraft client) {
+            super(blockEntity, front, filter);
 
-    public SignPreviewHud(MinecraftClient client) {
+            minecraft = client;
+            font = client.font;
+            width = client.getWindow().getGuiScaledWidth();
+            init();
+            ((AbstractSignEditScreenAccessor)this).signpreview$setFrame(6);
+        }
+
+        @Override
+        public void accept(GuiGraphics context) {
+            ((AbstractSignEditScreenAccessor)this).signpreview$invokeRenderSign(context);
+        }
+    }
+
+    private static class HangingSignRenderer extends HangingSignEditScreen implements Consumer<GuiGraphics> {
+        HangingSignRenderer(SignBlockEntity blockEntity, boolean front, boolean filter, Minecraft client) {
+            super(blockEntity, front, filter);
+
+            minecraft = client;
+            font = client.font;
+            width = client.getWindow().getGuiScaledWidth();
+            init();
+            ((AbstractSignEditScreenAccessor)this).signpreview$setFrame(6);
+        }
+
+        @Override
+        public void accept(GuiGraphics context) {
+            ((AbstractSignEditScreenAccessor)this).signpreview$invokeRenderSign(context);
+        }
+    }
+
+    private final Minecraft client;
+
+    public SignPreviewHud(Minecraft client) {
         this.client = client;
     }
 
-    public void render(DrawContext context, SignBlockEntity blockEntity, boolean front) {
-        int width = this.client.getWindow().getScaledWidth();
-
-        DiffuseLighting.disableGuiDepthLighting();
-        context.getMatrices().push();
-        context.getMatrices().translate(width / 2.0F, 125.0F, 50.0F);
-        context.getMatrices().push();
-        this.renderSignBackground(context, blockEntity);
-        context.getMatrices().pop();
-        this.renderSignText(context, blockEntity, front);
-        context.getMatrices().pop();
-        DiffuseLighting.enableGuiDepthLighting();
-    }
-
-    private void renderSignBackground(DrawContext context, SignBlockEntity blockEntity) {
-        var signType = AbstractSignBlock.getWoodType(blockEntity.getCachedState().getBlock());
-
+    public void render(GuiGraphics context, SignBlockEntity blockEntity, boolean front) {
+        Consumer<GuiGraphics> renderer;
         if (blockEntity instanceof HangingSignBlockEntity) {
-            var texture = Identifier.ofVanilla("textures/gui/hanging_signs/" + signType.name() + ".png");
-
-            context.getMatrices().translate(0.0F, -13.0F, 0.0F);
-            context.getMatrices().scale(4.5F, 4.5F, 1.0F);
-            context.drawTexture(RenderLayer::getGuiTextured, texture,
-                    -8, -8, 0.0F, 0.0F, 16, 16, 16, 16);
+            renderer = new HangingSignRenderer(blockEntity, front, client.isTextFilteringEnabled(), client);
         } else {
-            var model = SignBlockEntityRenderer.createSignModel(
-                    this.client.getLoadedEntityModels(), signType, false);
-
-            context.getMatrices().translate(0.0F, 31.0F, 0.0F);
-            context.getMatrices().scale(62.500004F, 62.500004F, -62.500004F);
-            context.draw(vertexConsumers -> {
-                var spriteIdentifier = TexturedRenderLayers.getSignTextureId(signType);
-                var vertexConsumer = spriteIdentifier.getVertexConsumer(vertexConsumers, model::getLayer);
-                model.render(context.getMatrices(), vertexConsumer, 15728880, OverlayTexture.DEFAULT_UV);
-            });
+            renderer = new SignRenderer(blockEntity, front, client.isTextFilteringEnabled(), client);
         }
-    }
 
-    private void renderSignText(DrawContext context, SignBlockEntity blockEntity, boolean front) {
-        var textRenderer = this.client.textRenderer;
-        boolean filtered = this.client.shouldFilterText();
-        var text = blockEntity.getText(front);
-        var messages = IntStream.range(0, 4)
-                .mapToObj(line -> text.getMessage(line, filtered))
-                .map(Text::getString)
-                .toArray(String[]::new);
-
-        context.getMatrices().translate(0.0F, 0.0F, 4.0F);
-        var vector3f = blockEntity instanceof HangingSignBlockEntity ? HANGING_SIGN_TEXT_SCALE : SIGN_TEXT_SCALE;
-        context.getMatrices().scale(vector3f.x(), vector3f.y(), vector3f.z());
-        int i = text.isGlowing() ? text.getColor().getSignColor() : AbstractSignBlockEntityRenderer.getTextColor(text);
-        int l = 4 * blockEntity.getTextLineHeight() / 2;
-
-        for (int n = 0; n < messages.length; n++) {
-            var string = messages[n];
-            if (string != null) {
-                if (textRenderer.isRightToLeft()) {
-                    string = textRenderer.mirror(string);
-                }
-
-                int o = -textRenderer.getWidth(string) / 2;
-                context.drawText(textRenderer, string, o, n * blockEntity.getTextLineHeight() - l, i, false);
-            }
-        }
+        context.flush();
+        Lighting.setupForFlatItems();
+        renderer.accept(context);
+        context.flush();
+        Lighting.setupFor3DItems();
     }
 }

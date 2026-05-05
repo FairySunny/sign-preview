@@ -1,32 +1,35 @@
 package com.fairysunny.mc.signpreview.hud;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.MapRenderState;
-import net.minecraft.component.type.MapIdComponent;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.renderer.state.MapRenderState;
+import net.minecraft.world.level.saveddata.maps.MapId;
 
 public class ItemFrameMapPreviewHud {
-    private final MinecraftClient client;
+    private final Minecraft client;
 
-    public ItemFrameMapPreviewHud(MinecraftClient client) {
+    public ItemFrameMapPreviewHud(Minecraft client) {
         this.client = client;
     }
 
-    public void render(DrawContext context, MapIdComponent mapId) {
-        var world = this.client.world;
-        if (world == null) return;
-        var mapState = world.getMapState(mapId);
-        if (mapState == null) return;
-        int width = this.client.getWindow().getScaledWidth();
-        int height = this.client.getWindow().getScaledHeight();
+    public void render(GuiGraphics context, MapId mapId) {
+        var level = this.client.level;
+        if (level == null) return;
+        var mapData = level.getMapData(mapId);
+        if (mapData == null) return;
+        int width = this.client.getWindow().getGuiScaledWidth();
+        int height = this.client.getWindow().getGuiScaledHeight();
 
-        context.getMatrices().push();
-        context.getMatrices().translate(width / 2.0F - 64.0F, height / 2.0F - 64.0F, 0.0F);
-        var mapRenderState = new MapRenderState();
+        // CartographyTableScreen.renderMap
+        context.pose().pushPose();
+        context.pose().translate(width / 2.0F - 64.0F, height / 2.0F - 64.0F, 0.0F);
         var mapRenderer = this.client.getMapRenderer();
-        mapRenderer.update(mapId, mapState, mapRenderState);
-        context.draw(vertexConsumers ->
-                mapRenderer.draw(mapRenderState, context.getMatrices(), vertexConsumers, true, 15728880));
-        context.getMatrices().pop();
+        var mapRenderState = new MapRenderState();
+        mapRenderer.extractRenderState(mapId, mapData, mapRenderState);
+        context.drawSpecial(multiBufferSource ->
+                mapRenderer.render(mapRenderState, context.pose(), multiBufferSource,
+                        true, LightTexture.FULL_BRIGHT));
+        context.pose().popPose();
     }
 }

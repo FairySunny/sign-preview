@@ -5,9 +5,9 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudLayerRegistrationCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.IdentifiedLayer;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.glfw.GLFW;
 
 public class SignPreview implements ClientModInitializer {
@@ -15,11 +15,12 @@ public class SignPreview implements ClientModInitializer {
 
     public static SignPreviewConfig CONFIG = new SignPreviewConfig();
 
-    public static final Identifier HUD_LAYER_PREVIEW = Identifier.of(MOD_ID, "preview");
+    public static final ResourceLocation HUD_LAYER_PREVIEW =
+            ResourceLocation.fromNamespaceAndPath(MOD_ID, "preview");
 
     public static final String KEY_CATEGORY = "key.categories.signpreview";
-    public static final KeyBinding KEY_BINDING_PREVIEW = new KeyBinding(
-            "key.signpreview.preview", GLFW.GLFW_KEY_V, KEY_CATEGORY);
+    public static final KeyMapping KEY_BINDING_PREVIEW =
+            new KeyMapping("key.signpreview.preview", GLFW.GLFW_KEY_V, KEY_CATEGORY);
 
     @Override
     public void onInitializeClient() {
@@ -31,7 +32,7 @@ public class SignPreview implements ClientModInitializer {
             CONFIG = config;
         }
 
-        var previewHud = new PreviewHud(MinecraftClient.getInstance());
+        var previewHud = new PreviewHud(Minecraft.getInstance());
         HudLayerRegistrationCallback.EVENT.register(layeredDrawer ->
                 layeredDrawer.addLayer(IdentifiedLayer.of(HUD_LAYER_PREVIEW, previewHud::render)));
 

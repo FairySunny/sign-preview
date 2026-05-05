@@ -22,8 +22,11 @@
 			"com.fairysunny.mc.signpreview.modmenu.SignPreviewModMenuIntegration"
 		]
 	},
+	"mixins": [
+		"signpreview.mixins.json"
+	],
 	"depends": {
-		"fabricloader": ">=0.17.2",
+		"fabricloader": ">=0.19.2",
 		"minecraft": "1.21.4",
 		"java": ">=21",
 		"fabric-api": "*"
