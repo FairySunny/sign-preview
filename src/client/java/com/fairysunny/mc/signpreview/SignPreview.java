@@ -15,12 +15,12 @@ public class SignPreview implements ClientModInitializer {
 
     public static SignPreviewConfig CONFIG = new SignPreviewConfig();
 
-    public static final ResourceLocation HUD_LAYER_PREVIEW =
-            ResourceLocation.fromNamespaceAndPath(MOD_ID, "preview");
+    public static final ResourceLocation HUD_LAYER_PREVIEW = ResourceLocation
+            .fromNamespaceAndPath(MOD_ID, "preview");
 
     public static final String KEY_CATEGORY = "key.categories.signpreview";
-    public static final KeyMapping KEY_BINDING_PREVIEW =
-            new KeyMapping("key.signpreview.preview", GLFW.GLFW_KEY_V, KEY_CATEGORY);
+    public static final KeyMapping KEY_BINDING_PREVIEW = KeyBindingHelper
+            .registerKeyBinding(new KeyMapping("key.signpreview.preview", GLFW.GLFW_KEY_V, KEY_CATEGORY));
 
     @Override
     public void onInitializeClient() {
@@ -35,7 +35,5 @@ public class SignPreview implements ClientModInitializer {
         var previewHud = new PreviewHud(Minecraft.getInstance());
         HudLayerRegistrationCallback.EVENT.register(layeredDrawer ->
                 layeredDrawer.addLayer(IdentifiedLayer.of(HUD_LAYER_PREVIEW, previewHud::render)));
-
-        KeyBindingHelper.registerKeyBinding(KEY_BINDING_PREVIEW);
     }
 }

@@ -13,57 +13,57 @@ import java.util.function.Consumer;
 
 public class SignPreviewHud {
     private static class SignRenderer extends SignEditScreen implements Consumer<GuiGraphics> {
-        SignRenderer(SignBlockEntity blockEntity, boolean front, Minecraft client) {
-            super(blockEntity, front, client.isTextFilteringEnabled());
+        SignRenderer(SignBlockEntity blockEntity, boolean front, Minecraft minecraft) {
+            super(blockEntity, front, minecraft.isTextFilteringEnabled());
 
-            minecraft = client;
-            font = client.font;
-            width = client.getWindow().getGuiScaledWidth();
+            this.minecraft = minecraft;
+            font = minecraft.font;
+            width = minecraft.getWindow().getGuiScaledWidth();
             init();
             ((AbstractSignEditScreenAccessor)this).signpreview$setFrame(6);
         }
 
         @Override
-        public void accept(GuiGraphics context) {
-            ((AbstractSignEditScreenAccessor)this).signpreview$invokeRenderSign(context);
+        public void accept(GuiGraphics graphics) {
+            ((AbstractSignEditScreenAccessor)this).signpreview$invokeRenderSign(graphics);
         }
     }
 
     private static class HangingSignRenderer extends HangingSignEditScreen implements Consumer<GuiGraphics> {
-        HangingSignRenderer(SignBlockEntity blockEntity, boolean front, Minecraft client) {
-            super(blockEntity, front, client.isTextFilteringEnabled());
+        HangingSignRenderer(SignBlockEntity blockEntity, boolean front, Minecraft minecraft) {
+            super(blockEntity, front, minecraft.isTextFilteringEnabled());
 
-            minecraft = client;
-            font = client.font;
-            width = client.getWindow().getGuiScaledWidth();
+            this.minecraft = minecraft;
+            font = minecraft.font;
+            width = minecraft.getWindow().getGuiScaledWidth();
             init();
             ((AbstractSignEditScreenAccessor)this).signpreview$setFrame(6);
         }
 
         @Override
-        public void accept(GuiGraphics context) {
-            ((AbstractSignEditScreenAccessor)this).signpreview$invokeRenderSign(context);
+        public void accept(GuiGraphics graphics) {
+            ((AbstractSignEditScreenAccessor)this).signpreview$invokeRenderSign(graphics);
         }
     }
 
-    private final Minecraft client;
+    private final Minecraft minecraft;
 
-    public SignPreviewHud(Minecraft client) {
-        this.client = client;
+    public SignPreviewHud(Minecraft minecraft) {
+        this.minecraft = minecraft;
     }
 
-    public void render(GuiGraphics context, SignBlockEntity blockEntity, boolean front) {
+    public void render(GuiGraphics graphics, SignBlockEntity blockEntity, boolean front) {
         Consumer<GuiGraphics> renderer;
         if (blockEntity instanceof HangingSignBlockEntity) {
-            renderer = new HangingSignRenderer(blockEntity, front, client);
+            renderer = new HangingSignRenderer(blockEntity, front, minecraft);
         } else {
-            renderer = new SignRenderer(blockEntity, front, client);
+            renderer = new SignRenderer(blockEntity, front, minecraft);
         }
 
-        context.flush();
+        graphics.flush();
         Lighting.setupForFlatItems();
-        renderer.accept(context);
-        context.flush();
+        renderer.accept(graphics);
+        graphics.flush();
         Lighting.setupFor3DItems();
     }
 }

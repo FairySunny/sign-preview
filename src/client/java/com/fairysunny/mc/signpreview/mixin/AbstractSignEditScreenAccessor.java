@@ -12,5 +12,5 @@ public interface AbstractSignEditScreenAccessor {
     void signpreview$setFrame(int frame);
 
     @Invoker("renderSign")
-    void signpreview$invokeRenderSign(GuiGraphics context);
+    void signpreview$invokeRenderSign(GuiGraphics graphics);
 }
