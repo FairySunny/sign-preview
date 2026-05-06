@@ -1,10 +1,11 @@
 {
 	"required": true,
 	"package": "com.fairysunny.mc.signpreview.mixin",
-	"compatibilityLevel": "JAVA_21",
+	"compatibilityLevel": "JAVA_25",
 	"client": [
 		"LocalPlayerAccessor",
-		"AbstractSignEditScreenAccessor"
+		"AbstractSignEditScreenAccessor",
+		"SignEditScreenAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1

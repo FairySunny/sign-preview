@@ -4,7 +4,7 @@ import com.fairysunny.mc.signpreview.SignPreview;
 import com.fairysunny.mc.signpreview.mixin.LocalPlayerAccessor;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.decoration.ItemFrame;
@@ -24,7 +24,7 @@ public class PreviewHud {
         this.itemFrameMapPreviewHud = new ItemFrameMapPreviewHud(minecraft);
     }
 
-    public void render(GuiGraphics context, DeltaTracker tickCounter) {
+    public void render(GuiGraphicsExtractor graphics, DeltaTracker tickCounter) {
         if (!SignPreview.KEY_BINDING_PREVIEW.isDown()) return;
 
         var camera = minecraft.getCameraEntity();
@@ -41,7 +41,7 @@ public class PreviewHud {
                 var blockEntity = level.getBlockEntity(((BlockHitResult)hitResult).getBlockPos());
                 if (blockEntity instanceof SignBlockEntity signBlockEntity) {
                     boolean front = isCameraFacingSignFront(camera, signBlockEntity, tickDelta);
-                    signPreviewHud.render(context, signBlockEntity, front);
+                    signPreviewHud.render(graphics, signBlockEntity, front);
                 }
                 break;
             case ENTITY:
@@ -49,7 +49,7 @@ public class PreviewHud {
                 if (entity instanceof ItemFrame itemFrame) {
                     var mapId = itemFrame.getFramedMapId(itemFrame.getItem());
                     if (mapId != null) {
-                        itemFrameMapPreviewHud.render(context, mapId);
+                        itemFrameMapPreviewHud.render(graphics, mapId);
                     }
                 }
                 break;
