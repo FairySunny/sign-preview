@@ -13,18 +13,18 @@ public class ItemFrameMapPreviewHud {
     }
 
     public void render(GuiGraphicsExtractor graphics, MapId mapId) {
-        var level = this.minecraft.level;
+        var level = minecraft.level;
         if (level == null) return;
         var mapData = level.getMapData(mapId);
         if (mapData == null) return;
-        int width = this.minecraft.getWindow().getGuiScaledWidth();
-        int height = this.minecraft.getWindow().getGuiScaledHeight();
+        int width = minecraft.getWindow().getGuiScaledWidth();
+        int height = minecraft.getWindow().getGuiScaledHeight();
 
         // CartographyTableScreen.renderMap
         graphics.pose().pushMatrix();
         graphics.pose().translate(width / 2.0F - 64.0F, height / 2.0F - 64.0F);
         var mapRenderState = new MapRenderState();
-        this.minecraft.getMapRenderer().extractRenderState(mapId, mapData, mapRenderState);
+        minecraft.getMapRenderer().extractRenderState(mapId, mapData, mapRenderState);
         graphics.map(mapRenderState);
         graphics.pose().popMatrix();
     }

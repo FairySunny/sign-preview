@@ -20,8 +20,8 @@ public class PreviewHud {
 
     public PreviewHud(Minecraft minecraft) {
         this.minecraft = minecraft;
-        this.signPreviewHud = new SignPreviewHud(minecraft);
-        this.itemFrameMapPreviewHud = new ItemFrameMapPreviewHud(minecraft);
+        signPreviewHud = new SignPreviewHud(minecraft);
+        itemFrameMapPreviewHud = new ItemFrameMapPreviewHud(minecraft);
     }
 
     public void render(GuiGraphicsExtractor graphics, DeltaTracker tickCounter) {
