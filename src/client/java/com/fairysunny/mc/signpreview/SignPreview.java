@@ -16,10 +16,10 @@ public class SignPreview implements ClientModInitializer {
 
     public static final Identifier HUD_LAYER_PREVIEW = Identifier.fromNamespaceAndPath(MOD_ID, "preview");
 
-    public static final KeyMapping.Category KEY_CATEGORY =
-            KeyMapping.Category.register(Identifier.fromNamespaceAndPath(MOD_ID, "general"));
-    public static final KeyMapping KEY_BINDING_PREVIEW =
-            new KeyMapping("key.signpreview.preview", GLFW.GLFW_KEY_V, KEY_CATEGORY);
+    public static final KeyMapping.Category KEY_CATEGORY = KeyMapping.Category
+            .register(Identifier.fromNamespaceAndPath(MOD_ID, "general"));
+    public static final KeyMapping KEY_BINDING_PREVIEW = KeyBindingHelper
+            .registerKeyBinding(new KeyMapping("key.signpreview.preview", GLFW.GLFW_KEY_V, KEY_CATEGORY));
 
     @Override
     public void onInitializeClient() {
@@ -33,7 +33,5 @@ public class SignPreview implements ClientModInitializer {
 
         var previewHud = new PreviewHud(Minecraft.getInstance());
         HudElementRegistry.addLast(HUD_LAYER_PREVIEW, previewHud::render);
-
-        KeyBindingHelper.registerKeyBinding(KEY_BINDING_PREVIEW);
     }
 }
