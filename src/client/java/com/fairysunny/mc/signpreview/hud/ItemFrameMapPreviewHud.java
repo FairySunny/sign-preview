@@ -3,8 +3,7 @@ package com.fairysunny.mc.signpreview.hud;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.state.MapRenderState;
-import net.minecraft.world.level.saveddata.maps.MapId;
+import net.minecraft.world.item.MapItem;
 
 public class ItemFrameMapPreviewHud {
     private final Minecraft minecraft;
@@ -13,23 +12,20 @@ public class ItemFrameMapPreviewHud {
         this.minecraft = minecraft;
     }
 
-    public void render(GuiGraphics graphics, MapId mapId) {
+    public void render(GuiGraphics graphics, int mapId) {
         var level = minecraft.level;
         if (level == null) return;
-        var mapData = level.getMapData(mapId);
+        var mapData = MapItem.getSavedData(mapId, level);
         if (mapData == null) return;
         int width = minecraft.getWindow().getGuiScaledWidth();
         int height = minecraft.getWindow().getGuiScaledHeight();
 
         // CartographyTableScreen.renderMap
         graphics.pose().pushPose();
-        graphics.pose().translate(width / 2.0F - 64.0F, height / 2.0F - 64.0F, 0.0F);
-        var mapRenderer = minecraft.getMapRenderer();
-        var mapRenderState = new MapRenderState();
-        mapRenderer.extractRenderState(mapId, mapData, mapRenderState);
-        graphics.drawSpecial(multiBufferSource ->
-                mapRenderer.render(mapRenderState, graphics.pose(), multiBufferSource,
-                        true, LightTexture.FULL_BRIGHT));
+        graphics.pose().translate(width / 2.0F - 64.0F, height / 2.0F - 64.0F, 1.0F);
+        minecraft.gameRenderer.getMapRenderer()
+                .render(graphics.pose(), graphics.bufferSource(), mapId, mapData, true, LightTexture.FULL_BRIGHT);
+        graphics.flush();
         graphics.pose().popPose();
     }
 }

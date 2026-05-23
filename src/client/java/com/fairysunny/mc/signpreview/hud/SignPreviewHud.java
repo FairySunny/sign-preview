@@ -60,10 +60,8 @@ public class SignPreviewHud {
             renderer = new SignRenderer(blockEntity, front, minecraft);
         }
 
-        graphics.flush();
         Lighting.setupForFlatItems();
         renderer.accept(graphics);
-        graphics.flush();
         Lighting.setupFor3DItems();
     }
 }
