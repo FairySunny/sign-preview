@@ -4,8 +4,7 @@
 	"compatibilityLevel": "JAVA_25",
 	"client": [
 		"LocalPlayerAccessor",
-		"AbstractSignEditScreenAccessor",
-		"SignEditScreenAccessor"
+		"AbstractSignEditScreenAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1

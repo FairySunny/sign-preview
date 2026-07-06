@@ -1,14 +1,11 @@
 package com.fairysunny.mc.signpreview.hud;
 
 import com.fairysunny.mc.signpreview.mixin.AbstractSignEditScreenAccessor;
-import com.fairysunny.mc.signpreview.mixin.SignEditScreenAccessor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.font.TextFieldHelper;
 import net.minecraft.client.gui.screens.inventory.HangingSignEditScreen;
 import net.minecraft.client.gui.screens.inventory.SignEditScreen;
-import net.minecraft.client.renderer.blockentity.StandingSignRenderer;
-import net.minecraft.world.level.block.PlainSignBlock;
 import net.minecraft.world.level.block.entity.HangingSignBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import org.apache.commons.lang3.function.Consumers;
@@ -35,11 +32,6 @@ public class SignPreviewHud {
 
             width = minecraft.getWindow().getGuiScaledWidth();
             ((AbstractSignEditScreenAccessor)this).signpreview$setSignField(new DummyTextFieldHelper());
-
-            // SignEditScreen.init
-            var attachment = PlainSignBlock.getAttachmentPoint(sign.getBlockState());
-            var signModel = StandingSignRenderer.createSignModel(minecraft.getEntityModels(), woodType, attachment);
-            ((SignEditScreenAccessor)this).signpreview$setSignModel(signModel);
         }
 
         @Override
